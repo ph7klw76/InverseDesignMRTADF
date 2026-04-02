@@ -130,7 +130,7 @@ The GNN can replace the descriptor-based predictor entirely, or serve as an ense
 conda config --env --set channel_priority strict
 
 conda install -y -c conda-forge \
-  "numpy=1.26.*" pandas scikit-learn openpyxl selfies rdkit mordred
+  "numpy=1.26.*" pandas scikit-learn openpyxl selfies rdkit mordred "sympy=1.13.1"
 
 conda install -y pytorch==2.5.1 pytorch-cuda=12.1 -c pytorch -c nvidia
 
