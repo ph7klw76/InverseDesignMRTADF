@@ -125,7 +125,16 @@ Atom featuriser → N × MPNN layers → global readout → task heads
 
 The GNN can replace the descriptor-based predictor entirely, or serve as an ensemble member alongside it.
 
-###Required Library 
+### Required Library 
+
+conda config --env --set channel_priority strict
+
+conda install -y -c conda-forge \
+  "numpy=1.26.*" pandas scikit-learn openpyxl selfies rdkit mordred
+
+conda install -y pytorch==2.5.1 pytorch-cuda=12.1 -c pytorch -c nvidia
+
+pip install torch_geometric
 
 ### How to run
 
