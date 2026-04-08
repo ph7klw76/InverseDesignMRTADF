@@ -18,6 +18,8 @@ Examples:
         --output molecules_with_structures.xlsx ^
         --smiles-column A ^
         --image-column B
+
+        python smiles_to_excel_structures.py --input top50_candidates-2.csv --output top50_candidates_with_structures-2.xlsx --smiles-column smiles --image-column M
 """
 
 import argparse
