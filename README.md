@@ -14,7 +14,7 @@
 
 This repository contains a research-oriented Python workflow for **MR-TADF molecular candidate generation, surrogate prediction, reliability-gated ranking, and validation-queue export**.
 
-The core script, `mr_tadf_bo_pipeline_v21.py`, trains target-specific surrogate models from user-provided labelled molecular data, generates chemically filtered candidate structures by rule-based graph edits, scores them with uncertainty-aware acquisition logic, and writes ranked candidate tables for external quantum-chemical or experimental validation.
+The core script, `mr_tadf_bo_pipeline.py`, trains target-specific surrogate models from user-provided labelled molecular data, generates chemically filtered candidate structures by rule-based graph edits, scores them with uncertainty-aware acquisition logic, and writes ranked candidate tables for external quantum-chemical or experimental validation.
 
 The repository also includes utilities for computing or parsing **sTDA-xTB excited-state descriptors** and **frontier-orbital overlap heuristics** used as optional feature blocks.
 
