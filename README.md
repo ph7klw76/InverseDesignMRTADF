@@ -1,4 +1,4 @@
-# MR-TADF Pipeline v21
+# Inverse design MR-TADF Pipeline
 
 **Reliability-gated inverse design and semiempirical descriptor workflows for multi-resonance TADF candidate prioritisation**
 
