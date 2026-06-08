@@ -599,7 +599,7 @@ The cluster scripts assume a conda environment named `inverteddesign` and a SLUR
 This is the simplest way to test the main pipeline logic.
 
 ```bash id="lm861l"
-python mr_tadf_bo_pipeline_v21.py \
+python mr_tadf_bo_pipeline.py \
   --data final_updated_data.xlsx \
   --target target5-new1_reordered.xlsx \
   --n_candidates 100 \
@@ -621,7 +621,7 @@ target5-new1_reordered.xlsx.units.json
 Use this when descriptor manifests are available:
 
 ```bash id="t99r27"
-python mr_tadf_bo_pipeline_v21.py \
+python mr_tadf_bo_pipeline.py \
   --data final_updated_data.xlsx \
   --target target5-new1_reordered.xlsx \
   --n_candidates 500 \
@@ -642,7 +642,7 @@ python mr_tadf_bo_pipeline_v21.py \
 For legacy descriptor CSVs without manifest sidecars:
 
 ```bash id="mazs9u"
-python mr_tadf_bo_pipeline_v21.py \
+python mr_tadf_bo_pipeline.py \
   --data final_updated_data.xlsx \
   --target target5-new1_reordered.xlsx \
   --n_candidates 500 \
@@ -735,7 +735,7 @@ For xTB descriptors, the main script expects a producer named `xtb_descriptors.p
 ### Step C: run inverse design
 
 ```bash id="3tb0jc"
-python mr_tadf_bo_pipeline_v21.py \
+python mr_tadf_bo_pipeline.py \
   --data final_updated_data.xlsx \
   --target target5-new1_reordered.xlsx \
   --output results_v21 \
@@ -773,7 +773,7 @@ smiles,DeltaEST,T2-T1,Oscillator Strengths,Singlets,T1-S1(SOC),T2-S1(SOC)
 Then re-run with:
 
 ```bash id="43ke6c"
-python mr_tadf_bo_pipeline_v21.py \
+python mr_tadf_bo_pipeline.py \
   --data final_updated_data.xlsx \
   --target target5-new1_reordered.xlsx \
   --qc_results_file qc_results.csv \
@@ -865,55 +865,6 @@ It should not be interpreted as a standalone discovery engine that validates fin
 
 ---
 
-## Example citation block
-
-Replace the placeholders with the manuscript and repository metadata when available.
-
-```bibtex id="fosquc"
-@software{mr_tadf_pipeline_v21,
-  title        = {MR-TADF Pipeline v21: Reliability-Gated Inverse Design and sTDA-xTB Descriptor Workflows},
-  author       = {<Author list>},
-  year         = {<Year>},
-  version      = {v21},
-  url          = {https://github.com/<user>/<repository>},
-  note         = {Publication companion repository for MR-TADF candidate prioritisation}
-}
-```
-
-For manuscript companion use:
-
-```bibtex id="fch921"
-@article{mr_tadf_inverse_design,
-  title   = {<Manuscript title>},
-  author  = {<Author list>},
-  journal = {<Journal>},
-  year    = {<Year>},
-  doi     = {<DOI>}
-}
-```
-
----
-
-## Recommended additions for publication readiness
-
-Before public release, consider adding:
-
-- `environment.yml` or `requirements.txt` with pinned package versions,
-- `descriptor_provenance.py` if descriptor manifests are required,
-- `xtb_descriptors.py` if xTB descriptor generation is part of the published workflow,
-- descriptor CSV manifest sidecars for all precomputed descriptor CSVs,
-- example `validatedxyz/` subset for smoke tests,
-- a tiny synthetic dataset for CI that does not expose unpublished data,
-- tests for data loading, unit contracts, descriptor alias migration, and parser behaviour,
-- patched `run_stda_xtb_important_folder.sh` passing the parser’s required arguments,
-- `LICENSE`,
-- `CITATION.cff`,
-- schema documentation for output CSV columns,
-- a worked example notebook that reads `ranked_candidates.csv` and visualises queue trade-offs,
-- a clear statement of external QC settings used in the associated paper.
-
----
-
 ## Limitations
 
 - **No automatic validation:** the pipeline does not run DFT, TD-DFT, SOC, or experiments.
@@ -922,11 +873,7 @@ Before public release, consider adding:
 - **sTDA does not provide SOC:** sTDA descriptors are excited-state correlates, not SOC matrix elements.
 - **Overlap descriptors are heuristic:** Molden parsing uses coefficient-condensed proxies without an AO overlap matrix.
 - **Synthetic accessibility is local and heuristic:** the implemented score is corpus-relative and not a canonical SAscore.
-- **Descriptor provenance must be complete for strict publication runs:** missing manifests require either regeneration or an explicit legacy bypass.
 - **Some helper scripts are environment-specific:** SLURM scripts assume a particular cluster module/conda setup; the PowerShell script contains local Windows paths.
-- **The uploaded folder-level sTDA SLURM helper needs patching:** it omits parser arguments required by the uploaded parser.
-- **Deep generative models are not active:** older deep generative functionality is documented as removed and should not be cited as implemented in v21.
-
 ---
 
 ## Acknowledgments
@@ -936,15 +883,3 @@ This repository builds on widely used scientific Python and computational chemis
 The workflow is designed for transparent candidate prioritisation and should be paired with independent quantum-chemical or experimental validation before making materials claims.
 
 ---
-
-## Maintainer note
-
-When updating the repository, keep the README aligned with the code by checking:
-
-1. whether new flags are implemented or only planned,
-2. whether output files are always written or conditional,
-3. whether validation remains external/manual,
-4. whether descriptor manifests and unit contracts are required,
-5. whether any helper script has drifted from parser CLI requirements.
-
-For publication-facing releases, prefer conservative claims and include the exact input data, descriptor provenance, unit contracts, and run metadata needed to reproduce each reported table.
