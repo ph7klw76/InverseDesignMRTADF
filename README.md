@@ -91,16 +91,6 @@ flowchart TD
 | Ranking | Computes uncertainty-aware acquisition scores, AD penalties, feasibility factors, final scores, diversity-selected shortlists, and queue labels. |
 | Diagnostics | Writes cross-validation reports, feature-importance summaries, descriptor-health metadata, plots, reproducibility metadata, and validation-history JSON. |
 
-### Explicitly not implemented
-
-| Not implemented | Consequence |
-|---|---|
-| DFT / TD-DFT execution | Candidate validation must be run externally. |
-| Experimental validation | The pipeline only proposes candidates and records feedback when supplied. |
-| Full workflow orchestration across all scripts | Scripts are separate command-line tools; several handoffs are file-based. |
-| Rigorous SOC calculation | SOC is a supervised target and/or screening estimate, not computed from sTDA. |
-| Rigorous orbital-overlap population analysis | `stda_overlap.py` uses coefficient-condensed Molden heuristics without an AO overlap matrix. |
-| Deep generative modelling | Older VAE/flow/diffusion/RL machinery is documented as removed; current generation is operator-based. |
 
 ---
 
