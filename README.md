@@ -151,14 +151,6 @@ The scripts can be used together, but they are not a single automated closed-loo
 
 ---
 
-## Code-to-README validation note
-
-This README is derived from inspection of the provided code files and example data names. Claims are limited to behaviour visible in the scripts.
-
-Where the code implements only a heuristic, this README describes it as a heuristic. Where the code requires manual file handoff or external validation, this README states that explicitly. Where helper scripts reference files or arguments that were not included in the upload, those are listed under limitations and recommended additions.
-
----
-
 ## Data model
 
 ### Base descriptor file
@@ -210,7 +202,7 @@ By default, labelled target/QC/benchmark files are expected to have hash-bound u
 
 ### Purpose
 
-`mr_tadf_bo_pipeline_v21.py` trains surrogate models and proposes MR-TADF candidates for external validation.
+`mr_tadf_bo_pipeline.py` trains surrogate models and proposes MR-TADF candidates for external validation.
 
 ### Core operations
 
