@@ -590,6 +590,185 @@ Optional descriptor workflows require external command-line tools:
 
 The cluster scripts assume a conda environment named `inverteddesign` and a SLURM-based HPC system. Adjust those names for your local installation.
 
+## Option
+---
+1. Input, output, and run size
+Option	Default	Explanation
+`--data`	`updated_data.xlsx`	Main molecule/training-data file.
+`--target`	`target5.xlsx`	Target-label file containing properties such as `DeltaEST`, `T2-T1`, `OscStr`, SOC, and `Singlets`.
+`--seed_file`	`None`	Optional separate seed SMILES file, either `.txt` or `.xlsx`. If omitted, seeds are taken from the main data.
+`--benchmark_file`	`None`	External benchmark molecule file for prediction or validation reporting.
+`--n_candidates`	`10000`	Number of valid generated candidates to keep before scoring and ranking.
+`--n_workers`	`0`	Number of multiprocessing workers. `0` means auto-detect.
+`--attempts_per_worker`	`500000`	Maximum generation attempts per worker. Increase this if many generated structures fail chemistry filters.
+`--n_ensemble`	`20`	Number of models in the deployed bagged ensemble. Higher values usually improve stability but increase runtime.
+`--output`	`results`	Output directory for ranked candidates, metadata, reports, plots, and queue files.
+`--max_train_threads`	`0`	Maximum threads used for model training. `0` means no explicit cap or automatic behaviour.
+---
+2. Candidate generation and chemistry-edit controls
+Option	Default	Explanation
+`--exploratory`	off	Expands the chemistry search space beyond default conservative edits. This admits more exploratory substitutions and atoms.
+`--enable_bulky`	off	Enables bulky substituent generation. Useful when steric control is part of the design strategy.
+`--enable_diaza`	off	Enables two-atom aza-style substitutions.
+`--enable_annulation`	off	Enables the real benzannulation operator.
+`--novelty_mode`	`balanced`	Controls novelty strictness. Choices: `conservative`, `balanced`, `exploratory`. Conservative keeps candidates closer to known chemistry; exploratory allows broader novelty.
+---
+3. Similarity, novelty, and diversity controls
+Option	Default	Explanation
+`--min_core_sim_parent`	`0.70`	Minimum core similarity to the parent seed. Higher values keep candidates closer to their parent core.
+`--min_core_sim_train`	`0.60`	Minimum core similarity to training molecules. Higher values enforce a stronger applicability-domain requirement.
+`--max_whole_sim_train`	`0.95`	Maximum whole-molecule similarity to any training molecule. Prevents near-duplicate rediscovery.
+`--diversity_lambda`	`0.3`	Strength of diversity preference in final selection. Higher values favour chemically diverse selections.
+`--top_diverse_n`	`50`	Number of candidates written to the top-diverse output.
+`--max_per_parent`	`10`	Maximum number of selected candidates allowed from a single parent seed.
+`--max_per_scaffold_family`	`30`	Maximum number of selected candidates allowed from one scaffold family.
+---
+4. Main ranking objective
+Option	Default	Explanation
+`--objective`	`adaptive`	Acquisition or ranking objective. Choices: `adaptive`, `dEST`, `TADF_FoM`, `dEST_fOSC`.
+Objective meanings:
+Objective	Meaning
+`adaptive`	Default and most reliability-aware. It always considers small `DeltaEST` and the singlet-energy window. It only allows optional axes such as `fOSC` and `T2-T1` to influence ranking when local reliability checks pass.
+`dEST`	Legacy single-target style objective focused mainly on minimising `DeltaEST`.
+`dEST_fOSC`	Uses small `DeltaEST` and high oscillator strength. SOC is not used as a hard gate in this mode, making it safer when SOC predictions are unreliable.
+`TADF_FoM`	Full physics-inspired TADF figure of merit. More aggressive because it uses SOC terms, so it should be used only when SOC modelling is sufficiently reliable.
+---
+5. Adaptive-objective reliability controls
+These options mainly affect `--objective adaptive`.
+Option	Default	Explanation
+`--singlet_min_eV`	`2.0`	Lower edge of the target singlet-energy window in eV.
+`--singlet_max_eV`	`3.5`	Upper edge of the target singlet-energy window in eV.
+`--adaptive_min_ad`	`0.25`	Minimum applicability-domain score required before optional axes such as `fOSC` and `T2-T1` can influence adaptive ranking.
+`--adaptive_min_core_train`	`2`	Minimum number of exact-Murcko-core training rows required before optional adaptive axes may be used.
+`--adaptive_min_axis_oof_r2`	`0.0`	Minimum strict leave-one-Murcko-core-out pooled OOF R² required before an optional target axis can influence ranking.
+`--adaptive_max_core_mae_factor`	`1.5`	Held-out exact-core MAE must be no worse than this multiple of pooled strict-core OOF MAE.
+`--adaptive_min_core_eval`	`2`	Minimum labelled rows in a held-out exact-core fold before that core can be judged for local reliability.
+`--adaptive_joint_mc_samples`	`4096`	Number of Monte Carlo samples for correlated joint feasibility probability when residual covariance is enabled.
+---
+6. Physical constraint thresholds
+Option	Default	Explanation
+`--T2_T1_CONSTRAINT`	`0.40`	Upper bound on `T2-T1`, in the chosen energy units. Smaller values favour stronger T2-mediated RISC feasibility.
+`--fosc_min`	`0.01`	Minimum oscillator strength gate. Higher values favour brighter candidates.
+`--soc1_min`	`0.01`	Minimum `T1-S1` SOC gate, in the chosen SOC units. Not used in `dEST_fOSC`.
+`--soc2_min`	`0.05`	Minimum `T2-S1` SOC gate, in the chosen SOC units. Not used in `dEST_fOSC`.
+`--gap_max_eV`	`0.5`	Maximum physically useful `DeltaEST` feasibility ceiling in eV. Default non-inverted regime requires `0 <= DeltaEST <= gap_max_eV`.
+`--allow_inverted_singlet`	off	Opts into inverted-singlet design, where `S1 < T1` is allowed and small `
+---
+7. Unit options
+Option	Default	Explanation
+`--energy_units`	`eV`	Units of `DeltaEST`, `T2-T1`, and `Singlets` columns in the target file. Supported values: `eV`, `meV`, `cm-1`, `kcal/mol`, `kJ/mol`, `hartree`.
+`--soc_units`	`cm-1`	Units of SOC columns. Supported values: `cm-1`, `meV`, `eV`, `hartree`.
+---
+8. Surrogate model options
+Option	Default	Explanation
+`--use_gpr`	off	Uses Gaussian Process Regression for non-SOC targets instead of bagged XGB. Recommended mainly for small datasets.
+`--gp_alpha`	`0.1`	GP regularisation/noise floor. Larger values reduce interpolation and overfitting risk.
+`--enable_stacking`	off	Uses a stacked ensemble: XGB bag predictions feed a Ridge meta-learner. Mutually exclusive with `--use_gpr`.
+`--stacking_alpha`	`1.0`	Ridge regularisation strength for the stacking meta-learner.
+`--soc_xgb`	on	Forces SOC targets to use bagged XGB even if other targets use GPR or stacking. This is default because SOC targets are heavy-tailed and difficult for GPR/stacking.
+`--no_soc_xgb`	off	Makes SOC use the same surrogate family as the non-SOC targets.
+---
+9. Uncertainty calibration and cross-validation
+Option	Default	Explanation
+`--calibrate_sigma`	off	Holds out 20% of training data and computes conformal scaling to make predictive uncertainty more realistic.
+`--scaffold_conformal`	off	Adds per-scaffold-family conformal calibration with global fallback. Requires `--calibrate_sigma`.
+`--scaffold_cv`	off	Runs leave-family-out cross-validation per target and writes a scaffold-stratified report.
+`--core_split_cv_min_test`	`1`	Minimum held-out Murcko-core fold size. Default `1` includes singleton cores.
+`--cv_n_ensemble`	`8`	Ensemble size used inside leave-group-out CV and y-scramble tests. Lower than the deployed ensemble for speed.
+`--y_scramble_n`	`1`	Number of y-scramble / label-permutation baselines. Set to `0` to disable.
+`--enable_residual_cov`	off	Uses out-of-fold residual covariance for correlated joint feasibility and correlated TADF-FoM Monte Carlo sampling. This is more realistic than assuming independent target errors.
+---
+10. Chemistry hard filters
+Option	Default	Explanation
+`--sascore_max`	`6.0`	Maximum allowed corpus-relative synthetic-accessibility heuristic score. Larger values allow harder or more unusual molecules.
+`--disable_sa_filter`	off	Disables the synthetic-accessibility filter. Mostly useful for testing.
+`--disable_retro_filter`	off	Disables the retrosynthesis-feasibility filter. Mostly useful for testing.
+`--disable_charge_radical_filter`	off	Allows charged, radical, or open-shell species by disabling that rejection gate. Scientifically risky because the surrogate assumes neutral closed-shell molecules.
+---
+11. Applicability-domain gates and validation queues
+Option	Default	Explanation
+`--ad_hard_threshold`	`0.15`	Candidates below this AD score are rejected before ranking.
+`--ad_soft_threshold`	`0.40`	Candidates between the hard and soft thresholds receive a trust penalty.
+`--n_exploit`	`30`	Number of candidates in the exploitation queue: high-ranking, AD-clean candidates.
+`--n_explore`	`30`	Number of candidates in the exploration queue: novelty-focused but still AD-clean candidates.
+`--n_control`	`20`	Number of candidates in the control queue: close-to-seed comparators.
+`--validation_history_file`	`None`	Persistent JSON file for top-N predictions and merged validation labels. Defaults to `<output>/validation_history.json`.
+---
+12. Label-source weighting
+Option	Default	Explanation
+`--label_source_col`	`None`	Column in the target file identifying the source of each label, such as `experimental`, `DFT`, or `literature`.
+`--label_source_weights`	`None`	JSON mapping from source names to sample weights, for example `'{"experimental":2.0,"DFT":1.0}'`. Used mainly for XGB training.
+Example:
+```bash
+--label_source_col source \
+--label_source_weights '{"experimental":2.0,"DFT":1.0}'
+```
+---
+13. External QC / validation merge
+Option	Default	Explanation
+`--qc_results_file`	`None`	CSV containing externally computed QC, DFT, TD-DFT, or experimental results. Must include a `smiles` column and any target columns to merge.
+`--benchmark_file`	`None`	External benchmark molecule file for prediction/validation reporting.
+Recommended workflow:
+Run the pipeline.
+Inspect `ranked_candidates.csv` and queue files.
+Select candidates for external QC/DFT/experiment.
+Save external results in a CSV with `smiles` plus target columns.
+Re-run with `--qc_results_file your_qc_results.csv`.
+Review merged validation and discrepancy reports.
+---
+14. xTB ground-state descriptor options
+Option	Default	Explanation
+`--use_xtb_descriptors`	off	Adds GFN2-xTB ground-state descriptors to the feature matrix. Training descriptors are read from file; candidate descriptors are computed on the fly and cached.
+`--xtb_descriptors_file`	`xtb_out/xtb_descriptors.csv`	Precomputed xTB descriptor CSV for training molecules.
+`--xtb_bin`	`None`	Path to the `xtb` executable. If omitted, the script attempts auto-detection.
+`--xtb_cache`	`xtb_out/xtb_cache_cand`	Manifest-keyed cache directory for candidate xTB descriptors.
+---
+15. sTDA-xTB excited-state descriptor options
+Option	Default	Explanation
+`--use_stda_descriptors`	off	Adds sTDA-xTB excited-state descriptors such as S1/T1/T2 energies, fS1, configuration overlap, and entropy descriptors. This is one of the strongest feature-augmentation options in v21.
+`--stda_descriptors_file`	`stda_xtb_important_descriptors.csv`	Precomputed training-set sTDA-xTB descriptor CSV.
+`--stda_cache`	`stda_out/stda_cache_cand`	Manifest-keyed cache directory for candidate sTDA-xTB descriptors.
+`--xtb4stda_bin`	`None`	Path to `xtb4stda`. If omitted, the script attempts auto-detection.
+`--stda_bin`	`None`	Path to `stda`. If omitted, the script attempts auto-detection.
+`--stda_ewin`	`10.0`	sTDA excited-state energy window in eV.
+`--stda_timeout`	`600`	Per-molecule timeout in seconds for sTDA-related calculations.
+---
+16. SOC modelling options
+Option	Default	Explanation
+`--asinh_soc`	on	Trains SOC targets in asinh / signed-log space and transforms predictions back to linear SOC units. This helps with zero-spiked, heavy-tailed SOC distributions.
+`--no_asinh_soc`	off	Disables the asinh SOC transform and uses legacy linear SOC targets.
+`--soc_hurdle`	on	Uses a two-stage SOC model: classifier for whether SOC is appreciable, multiplied by a regressor for SOC magnitude when active.
+`--no_soc_hurdle`	off	Disables the hurdle model and uses a single-regressor SOC path.
+`--soc_active_threshold`	`0.5`	SOC threshold, in cm⁻¹, used to define large/active SOC for the hurdle classifier and screening columns.
+`--use_heavy_pos`	on	Adds SMILES-only heavy-atom-position descriptors such as Se/Te/P counts, heavy-in-core fraction, and distances to MR core/acceptor.
+`--no_heavy_pos`	off	Disables the heavy-atom-position descriptor block.
+Practical interpretation: v21 treats SOC as difficult and distributionally unusual. The default combination of `--asinh_soc`, `--soc_xgb`, `--soc_hurdle`, and `--use_heavy_pos` is designed to make SOC modelling more robust.
+---
+17. Overlap / frontier-descriptor options
+Option	Default	Explanation
+`--use_overlap_descriptors`	off	Adds frontier atom-condensed coefficient and overlap-style descriptors from `xtb --molden`. Slower, but may improve physically relevant feature representation.
+`--no_overlap_descriptors`	off	Explicitly disables overlap descriptors. Default is already off.
+`--overlap_xyz_dir`	`validatedxyz`	Directory of training-set `<Name>.xyz` geometries for overlap descriptors. Falls back to RDKit embedding if missing.
+`--overlap_cache`	`overlap_out/overlap_cache`	Manifest-keyed cache directory for overlap/molden descriptors.
+---
+18. Candidate geometry optimisation
+Option	Default	Explanation
+`--opt_candidate_geom`	auto / `None`	Forces GFN2-xTB optimisation of each candidate geometry before geometry-dependent descriptors. If not specified, the script auto-enables this when xTB/sTDA/overlap descriptors are active and `xtb` is available.
+`--no_opt_candidate_geom`	off	Forces candidate geometries to remain at RDKit/MMFF level. Faster, but may increase mismatch between training and candidate descriptors.
+---
+19. Descriptor provenance, health, and safety checks
+Option	Default	Explanation
+`--min_descriptor_success`	`0.5`	Minimum fraction of rows where a descriptor block must have real, non-imputed values before it is trusted.
+`--strict_descriptors`	off	Aborts the run if an enabled descriptor block falls below `--min_descriptor_success`. Without this flag, the pipeline warns and continues.
+`--allow_unverified_descriptor_csv`	off	Legacy opt-out that allows xTB/sTDA descriptor CSVs without valid hash-verified manifest sidecars. Default is safer.
+`--duplicate_conflict_policy`	`error`	How to handle duplicate `Name` keys with conflicting values. Choices: `error`, `first`.
+`--allow_missing_unit_contract`	off	Legacy opt-out that allows labelled target/QC/benchmark files without hash-bound `.units.json` sidecar files. Default is safer.
+---
+20. Per-target feature selection
+Option	Default	Explanation
+`--select_features_targets`	`DeltaEST,T2-T1,OscStr,T1-S1(SOC),T2-S1(SOC)`	Comma-separated targets for which the model uses only selected top-k descriptors. Use an empty string to disable feature selection.
+`--select_top_k`	`DeltaEST:40,T2-T1:40,OscStr:40,T1-S1(SOC):20,T2-S1(SOC):20`	Number of top descriptors retained per selected target. Can be a single integer for all targets or target-specific mappings.
+
 ---
 
 ## Quick start
