@@ -1,6 +1,6 @@
-# MR-TADF Adaptive Inverse-Design Pipeline
+# MR-TADF Adaptive Inverse-Design 
 
-> Publication companion pipeline for **operator-based MR-TADF candidate generation**, **target-specific surrogate modelling**, **applicability-domain-aware ranking**, and **manual external validation feedback**.
+> Pipeline for **operator-based MR-TADF candidate generation**, **target-specific surrogate modelling**, **applicability-domain-aware ranking**, and **manual external validation feedback**.
 
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![RDKit](https://img.shields.io/badge/chemistry-RDKit-green)
@@ -112,7 +112,7 @@ flowchart TD
 
 This README is derived from direct inspection of `mr_tadf_bo_pipeline_v22.py`.
 
-No other `.py` files were uploaded with the repository snapshot. However, the main script references several companion modules that are required only for optional descriptor workflows:
+The main script references several companion modules that are required only for optional descriptor workflows:
 
 | Referenced file | Role inferred from code | Required for baseline run? |
 |---|---|---:|
@@ -123,44 +123,6 @@ No other `.py` files were uploaded with the repository snapshot. However, the ma
 | `stda_descriptors.py` | Listed in the reproducibility source manifest; not directly imported in the inspected main path. | No direct baseline requirement inferred |
 
 The filename contains `v22`, while several internal strings and metadata fields report `v21`. The code also contains many comments labelled `v22`. Until the maintainer harmonises version strings, this README refers to the script as the **v22 file with v21 internal metadata strings**.
-
----
-
-## Suggested repository layout
-
-```text
-.
-├── README.md
-├── mr_tadf_bo_pipeline_v22.py
-├── updated_data.xlsx
-├── target5.xlsx
-├── target5.xlsx.units.json
-├── seeds.txt
-├── qc_round1.csv
-├── qc_round1.csv.units.json
-├── benchmark.xlsx
-├── benchmark.xlsx.units.json
-├── validatedxyz/
-│   ├── Molecule_A.xyz
-│   └── Molecule_B.xyz
-├── xtb_out/
-│   ├── xtb_descriptors.csv
-│   ├── xtb_descriptors.csv.manifest.json
-│   └── xtb_cache_cand/
-├── stda_out/
-│   └── stda_cache_cand/
-├── overlap_out/
-│   └── overlap_cache/
-├── results/
-└── optional_companion_scripts/
-    ├── descriptor_provenance.py
-    ├── xtb_descriptors.py
-    ├── parse_stda_xtb_important_descriptors.py
-    ├── stda_overlap.py
-    └── stda_descriptors.py
-```
-
-Only `mr_tadf_bo_pipeline_v22.py`, the descriptor table, and the target table are required for the simplest run. Unit sidecars are required by default for labelled target, QC, and benchmark files.
 
 ---
 
@@ -1166,37 +1128,10 @@ Before public release with a manuscript, consider adding:
 
 ---
 
-## Example citation block
 
-Until a manuscript DOI is available, cite the repository as software:
-
-```bibtex
-@software{mr_tadf_pipeline,
-  title        = {MR-TADF Adaptive Reliability-Gated Inverse-Design Pipeline},
-  author       = {Your Name and Contributors},
-  year         = {2026},
-  url          = {https://github.com/your-org/your-repo},
-  note         = {Operator-based candidate proposal pipeline with surrogate ranking and external-manual validation feedback}
-}
-```
-
-For a manuscript companion release, replace `url` and metadata with the archived repository DOI.
-
----
 
 ## Acknowledgments
 
 This code uses open-source scientific Python and cheminformatics tools, including RDKit, NumPy, pandas, SciPy, scikit-learn, XGBoost, and Matplotlib. Optional descriptor workflows may rely on xTB, xtb4stda, and sTDA executables.
 
 ---
-
-## Maintainer note
-
-This README intentionally distinguishes between:
-
-- implemented automated functionality,
-- optional descriptor workflows requiring additional scripts/executables,
-- diagnostic model-validation reports,
-- external manual QC/experimental validation.
-
-For publication, avoid describing the ranked candidates as validated molecules. They are **surrogate-prioritised proposals** awaiting external validation.
