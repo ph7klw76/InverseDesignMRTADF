@@ -41,7 +41,6 @@ v23 keeps the v18–v22 operator-based design philosophy and adds two engineerin
 | `--refresh_model_cache` | Ignores and overwrites an existing diagnostics cache. Use after changing training/CV code or when forcing a fresh diagnostic run. |
 | `--candidate_geom_cache` | Stores a shared generated-candidate 3D geometry so xTB, sTDA-xTB, and overlap descriptor blocks can reuse the same ETKDG/MMFF and optional GFN2-xTB-relaxed geometry rather than re-embedding the same molecule in each block. |
 
-Version-string caveat: the uploaded v23 filename and code comments include v23 functionality, but several internal strings still say `v21`, and many carried-forward comments refer to v22. This README treats the supplied script as the **v23 pipeline file**, while noting that internal metadata harmonisation is still recommended.
 
 ---
 
@@ -854,23 +853,3 @@ Only the main script and input workbooks are required for the simplest baseline 
 
 ---
 
-## Example citation block
-
-```bibtex
-@software{inverse_design_mrtadf_v23,
-  title        = {MR-TADF Adaptive Inverse Design Pipeline},
-  author       = {Your Name and Contributors},
-  year         = {2026},
-  version      = {v23},
-  url          = {https://github.com/ph7klw76/InverseDesignMRTADF},
-  note         = {Operator-based MR-TADF candidate proposal workflow with reliability-gated surrogate ranking and external-manual validation feedback}
-}
-```
-
-Please also cite RDKit, XGBoost, scikit-learn, xTB/sTDA tools, PaDEL, Mordred, and any descriptor-generation dependencies used in your specific workflow.
-
----
-
-## Maintainer note
-
-For the v23 repository update, make sure the repository contains `mr_tadf_bo_pipeline_v23.py` and that command examples in this README match the committed filename. Before publication, harmonise `metadata.json`, `publication_diagnostics.json`, the module docstring, and the `argparse` description so they report v23 consistently.
